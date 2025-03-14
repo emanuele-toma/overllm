@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+body {
+  background-color: #00000080;
+  color: #e0e0e0;
+}
+
+.no-preflight *,
+.no-preflight ::after,
+.no-preflight ::before,
+.no-preflight ::backdrop,
+.no-preflight ::file-selector-button {
+  margin: revert;
+  padding: revert;
+}
+
+.no-preflight h1,
+.no-preflight h2,
+.no-preflight h3,
+.no-preflight h4,
+.no-preflight h5,
+.no-preflight h6 {
+  font-size: revert;
+  font-weight: revert;
+}
+
+.no-preflight ol,
+.no-preflight ul,
+.no-preflight menu {
+  list-style: revert;
+}
+
+.no-preflight img,
+.no-preflight svg,
+.no-preflight video,
+.no-preflight canvas,
+.no-preflight audio,
+.no-preflight iframe,
+.no-preflight embed,
+.no-preflight object {
+  display: revert;
+  vertical-align: revert;
+}
+
+.no-preflight img,
+.no-preflight video {
+  max-width: revert;
+  height: revert;
+}
