@@ -1,30 +1,25 @@
-import { ReactNode } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { HTMLAttributes, ReactNode } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface CodeBlockProps {
   children: ReactNode;
+  extra: HTMLAttributes<HTMLElement>;
 }
 
-export function CodeBlock({ children }: CodeBlockProps) {
-  const value = renderToStaticMarkup(children);
+export function CodeBlock({ children, extra }: CodeBlockProps) {
+  console.log(typeof children);
 
-  const clean = value
-    .replace(/^<code class="language-.*?">/, "")
-    .replace(/<\/code>$/, "");
+  const language = extra.className?.replace('language-', '');
+  const isMultiline = typeof children === 'string' && children.includes('\n');
 
-  const unescaped =
-    new DOMParser().parseFromString(clean, "text/html").documentElement
-      .textContent || "";
-
-  const language =
-    value.split('class="')?.[1]?.split("language-")?.[1]?.split('"')?.[0] ||
-    "plaintext";
+  if ((!language && !isMultiline) || typeof children !== 'string') {
+    return <code className="font-mono bg-neutral-700 rounded-sm !px-1">{children}</code>;
+  }
 
   return (
-    <SyntaxHighlighter language={language} style={oneDark}>
-      {unescaped}
+    <SyntaxHighlighter language={language || 'plaintext'} style={oneDark}>
+      {children as string}
     </SyntaxHighlighter>
   );
 }

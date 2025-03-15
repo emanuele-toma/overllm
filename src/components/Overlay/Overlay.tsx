@@ -23,12 +23,12 @@ export function Overlay() {
     register('Alt+Space', async e => {
       if (e.state === 'Released') {
         const isMinimized = await currentWindow.isMinimized();
+        const isVisible = await currentWindow.isVisible();
 
-        if (isMinimized) {
+        if (isMinimized || !isVisible) {
           await currentWindow.unminimize();
           await currentWindow.show();
           await currentWindow.setFocus();
-          document.getElementById('prompt')?.focus();
         } else {
           await currentWindow.hide();
           await currentWindow.minimize();

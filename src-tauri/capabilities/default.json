@@ -20,6 +20,9 @@
     "core:window:allow-set-focus",
     "core:window:allow-hide",
     "core:window:allow-show",
-    "core:window:allow-is-focused"
+    "core:window:allow-is-focused",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled"
   ]
 }
