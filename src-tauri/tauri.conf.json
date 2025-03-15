@@ -18,7 +18,8 @@
         "transparent": true,
         "decorations": true,
         "fullscreen": true,
-        "alwaysOnTop": true
+        "alwaysOnTop": true,
+        "visible": false
       }
     ],
     "security": {
