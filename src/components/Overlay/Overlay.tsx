@@ -1,4 +1,5 @@
 import { useConfig } from '@/hooks/config';
+import { useEventChannel } from '@/hooks/eventChannel';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { isRegistered, register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import { useEffect, useState } from 'react';
@@ -9,16 +10,20 @@ export function Overlay() {
 
   const [canClose, setCanClose] = useState(false);
 
+  const dispatchWindowFocus = useEventChannel<{ focused: boolean }>('windowFocus');
+
   useEffect(() => {
     const currentWindow = getCurrentWindow();
 
     let timeout: ReturnType<typeof setTimeout> | null = null;
     const unlisten = currentWindow.onFocusChanged(({ payload: isFocused }) => {
+      if (import.meta.env.MODE === 'development') return;
       if (timeout !== null) clearTimeout(timeout);
       if (!isFocused) {
         timeout = setTimeout(() => {
           currentWindow.hide();
           currentWindow.minimize();
+          dispatchWindowFocus({ focused: false });
         }, 100);
       }
     });
@@ -27,6 +32,7 @@ export function Overlay() {
       if (e.key === 'Escape') {
         currentWindow.hide();
         currentWindow.minimize();
+        dispatchWindowFocus({ focused: false });
       }
     };
 
@@ -55,9 +61,11 @@ export function Overlay() {
             await currentWindow.unminimize();
             await currentWindow.show();
             await currentWindow.setFocus();
+            dispatchWindowFocus({ focused: true });
           } else {
             await currentWindow.hide();
             await currentWindow.minimize();
+            dispatchWindowFocus({ focused: false });
           }
         }
       });
@@ -72,7 +80,7 @@ export function Overlay() {
 
   return (
     <div
-      className="flex flex-col py-8 items-center min-h-screen"
+      className="flex flex-col py-8 items-center h-screen min-h-screen"
       onMouseDown={e => {
         if (e.target !== e.currentTarget) return;
         setCanClose(true);
@@ -84,6 +92,7 @@ export function Overlay() {
         if (e.target !== e.currentTarget) return;
         getCurrentWindow().hide();
         getCurrentWindow().minimize();
+        dispatchWindowFocus({ focused: false });
       }}
     >
       <Outlet />
