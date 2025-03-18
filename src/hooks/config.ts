@@ -1,38 +1,36 @@
-import { useCallback, useEffect, useState } from 'react';
+import { create } from 'zustand';
 
-interface _Config {
-  apiKey: string;
-  baseURL: string;
-  model: string;
+interface Config {
+  apiKey?: string;
+  baseURL?: string;
+  model?: string;
   runOnStartup: boolean;
   autoScroll: boolean;
+  hotkey: string;
 }
-
-type Config = Partial<_Config>;
 
 const storageKey = 'config';
 
 const baseConfig: Config = {
   runOnStartup: false,
   autoScroll: false,
+  hotkey: 'Alt+Space',
 };
 
-export const useConfig = () => {
-  const [config, setConfig] = useState<Config>(() => {
-    const storedConfig = localStorage.getItem(storageKey) || '{}';
+export const useConfig = create<{
+  config: Config;
+  setKey: <K extends keyof Config>(key: K, value: Config[K]) => void;
+}>(set => {
+  const storedConfig = localStorage.getItem(storageKey);
+  const initialConfig = { ...baseConfig, ...(storedConfig ? JSON.parse(storedConfig) : {}) };
 
-    const mergedConfig = { ...baseConfig, ...JSON.parse(storedConfig) };
-
-    return mergedConfig;
-  });
-
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(config));
-  }, [config, storageKey]);
-
-  const setKey = useCallback(<K extends keyof Config>(key: K, value: Config[K]) => {
-    setConfig(prevConfig => ({ ...prevConfig, [key]: value }));
-  }, []);
-
-  return { config, setKey };
-};
+  return {
+    config: initialConfig,
+    setKey: (key, value) =>
+      set(state => {
+        const newConfig = { ...state.config, [key]: value };
+        localStorage.setItem(storageKey, JSON.stringify(newConfig));
+        return { config: newConfig };
+      }),
+  };
+});
