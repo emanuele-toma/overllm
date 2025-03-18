@@ -1,4 +1,5 @@
 import { useConfig } from '@/hooks/config';
+import { useEventChannel } from '@/hooks/eventChannel';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { isRegistered, register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import { useEffect, useState } from 'react';
@@ -31,6 +32,7 @@ export function Overlay() {
       if (e.key === 'Escape') {
         currentWindow.hide();
         currentWindow.minimize();
+        dispatchWindowFocus({ focused: false });
       }
     };
 
@@ -59,9 +61,11 @@ export function Overlay() {
             await currentWindow.unminimize();
             await currentWindow.show();
             await currentWindow.setFocus();
+            dispatchWindowFocus({ focused: true });
           } else {
             await currentWindow.hide();
             await currentWindow.minimize();
+            dispatchWindowFocus({ focused: false });
           }
         }
       });
