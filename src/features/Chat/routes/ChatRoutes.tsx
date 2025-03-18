@@ -1,6 +1,5 @@
 import { AutoResizeTextarea } from '@/components/AutoResizeTextarea';
 import { CodeBlock } from '@/components/CodeBlock/CodeBlock';
-import { Divider } from '@/components/Divider';
 import { useConfig } from '@/hooks/config';
 import { useEventChannel } from '@/hooks/eventChannel';
 import { useOpenAIClient } from '@/hooks/openAI';
@@ -35,6 +34,8 @@ export function ChatRoutes() {
     if (autoScroll && config.autoScroll) scroll.scrollTo({ top: scroll.scrollHeight, behavior: 'smooth' });
   }, [message, autoScroll, config.autoScroll]);
 
+  const roundBorders = message || !client || !config.model ? 'rounded-b-none' : '';
+
   return (
     <>
       <div className="absolute top-4 right-4">
@@ -45,9 +46,7 @@ export function ChatRoutes() {
         </Link>
       </div>
       <div className="flex flex-col w-4/5 md:w-2/3 lg:w-1/2 xl:w-2/5 overflow-hidden">
-        <div
-          className={`p-4 bg-black rounded-xl border-1 border-neutral-700 w-full ${message ? 'rounded-b-none' : ''}`}
-        >
+        <div className={`p-4 bg-black rounded-xl border-1 border-neutral-700 w-full ${roundBorders}`}>
           <AutoResizeTextarea
             id="prompt"
             autoFocus
@@ -99,15 +98,14 @@ export function ChatRoutes() {
           />
         </div>
         {(!client || !config.model) && (
-          <>
-            <Divider />
-            <div className="m-4 p-4 bg-yellow-500/25  border-l-4 border-yellow-500 rounded-r-lg">
+          <div className="bg-black rounded-xl rounded-t-none border-1 border-t-0 border-neutral-700 w-full">
+            <div className="m-4 p-4 bg-yellow-500/25 rounded-lg">
               <p>
                 You need to provide an API key, base URL and Model to use the chat feature. Please check the settings
                 page.
               </p>
             </div>
-          </>
+          </div>
         )}
 
         {message && (
