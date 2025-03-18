@@ -1,4 +1,3 @@
-import { AutoResizeTextarea } from '@/components/AutoResizeTextarea';
 import { CodeBlock } from '@/components/CodeBlock/CodeBlock';
 import { useConfig } from '@/hooks/config';
 import { useEventChannel } from '@/hooks/eventChannel';
@@ -8,15 +7,14 @@ import { TbSettings } from 'react-icons/tb';
 import Markdown from 'react-markdown';
 import { Link } from 'react-router';
 import remarkGfm from 'remark-gfm';
+import { PromptInput } from '../component/PromptInput';
 import { useChatMessageStore } from '../stores/chatMessageStore';
 
 export function ChatRoutes() {
   const { config } = useConfig();
 
-  const { message, setMessage } = useChatMessageStore();
+  const { message } = useChatMessageStore();
 
-  const [prompt, setPrompt] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
   const [autoScroll, setAutoScroll] = useState<boolean>(config.autoScroll || true);
 
   useEventChannel<{ focused: boolean }>('windowFocus', ({ focused }) => {
@@ -47,55 +45,7 @@ export function ChatRoutes() {
       </div>
       <div className="flex flex-col w-4/5 md:w-2/3 lg:w-1/2 xl:w-2/5 overflow-hidden">
         <div className={`p-4 bg-black rounded-xl border-1 border-neutral-700 w-full ${roundBorders}`}>
-          <AutoResizeTextarea
-            id="prompt"
-            autoFocus
-            rows={1}
-            className="bg-black text-white border-0 p-0 outline-none w-full resize-none"
-            placeholder="Type something..."
-            value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            onKeyDown={async e => {
-              if (e.key !== 'Enter') return;
-              if (!client || !config.model) return;
-              if (e.shiftKey) return;
-
-              e.preventDefault();
-              e.stopPropagation();
-
-              if (loading) return;
-
-              setMessage('');
-              setLoading(true);
-
-              const wheel = (e: WheelEvent) => {
-                if (e.deltaY < 0) setAutoScroll(false);
-                if (e.deltaY > 0) {
-                  const scroll = document.getElementById('scroll');
-                  if (!scroll) return;
-                  if (scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight <= scroll.clientHeight * 0.2)
-                    setAutoScroll(true);
-                }
-              };
-              window.addEventListener('wheel', wheel);
-
-              const stream = await client.chat.completions.create({
-                model: config.model,
-                messages: [{ role: 'user', content: prompt }],
-                stream: true,
-              });
-
-              for await (const chunk of stream) {
-                setMessage(prev => prev + chunk.choices[0].delta.content);
-              }
-
-              if (config.autoScroll) setAutoScroll(true);
-
-              window.removeEventListener('wheel', wheel);
-
-              setLoading(false);
-            }}
-          />
+          <PromptInput client={client} setAutoScroll={setAutoScroll} />
         </div>
         {(!client || !config.model) && (
           <div className="bg-black rounded-xl rounded-t-none border-1 border-t-0 border-neutral-700 w-full">
@@ -110,10 +60,10 @@ export function ChatRoutes() {
 
         {message && (
           <>
-            <div className="py-4 pl-4 pr-1 bg-black rounded-xl rounded-t-none border-1 border-t-0 border-neutral-700 w-full h-5/6">
+            <div className="py-4 pl-4 pr-2 bg-black rounded-xl rounded-t-none border-1 border-t-0 border-neutral-700 w-full h-5/6">
               <div
                 id="scroll"
-                className="pr-1 overflow-y-auto h-full"
+                className="pr-2 overflow-y-auto h-full"
                 style={{
                   scrollbarColor: 'var(--color-neutral-700) transparent',
                   scrollbarWidth: 'thin',
