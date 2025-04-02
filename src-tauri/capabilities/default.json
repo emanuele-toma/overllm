@@ -9,7 +9,7 @@
     "http:default",
     {
       "identifier": "http:default",
-      "allow": [{ "url": "*://*" }]
+      "allow": [{ "url": "*://*" }, { "url": "*://localhost:*" }]
     },
     "global-shortcut:allow-is-registered",
     "global-shortcut:allow-register",

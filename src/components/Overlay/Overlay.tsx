@@ -78,18 +78,38 @@ export function Overlay() {
     };
   }, [config.hotkey]);
 
+  const isBackgroundElement = (target: HTMLElement) => {
+    if (target.id === 'overlay') return true;
+
+    let parent = target.parentElement;
+    while (parent) {
+      const backgroundColor = window.getComputedStyle(parent).backgroundColor;
+      if (backgroundColor && backgroundColor !== 'rgba(0, 0, 0, 0)') {
+        break;
+      }
+      if (parent.id === 'overlay') return true;
+      parent = parent.parentElement;
+    }
+    return false;
+  };
+
   return (
     <div
+      id="overlay"
       className="flex flex-col py-8 items-center h-screen min-h-screen"
       onMouseDown={e => {
-        if (e.target !== e.currentTarget) return;
+        const target = e.target as HTMLElement;
+        if (!isBackgroundElement(target)) return;
+
         setCanClose(true);
       }}
       onMouseUp={e => {
         if (!canClose) return;
         setCanClose(false);
 
-        if (e.target !== e.currentTarget) return;
+        const target = e.target as HTMLElement;
+        if (!isBackgroundElement(target)) return;
+
         getCurrentWindow().hide();
         getCurrentWindow().minimize();
         dispatchWindowFocus({ focused: false });
