@@ -1,17 +1,29 @@
 import { AutoResizeTextarea } from '@/components/AutoResizeTextarea';
 import { useConfig } from '@/hooks/config';
 import OpenAI from 'openai';
+import { ChatCompletionMessageParam } from 'openai/resources/index.mjs';
 import { useState } from 'react';
-import { useChatMessageStore } from '../../stores/chatMessageStore';
 
 interface PromptInputProps {
   client: OpenAI | undefined;
-  setAutoScroll: (value: boolean) => void;
+  context?: string;
+  autoClear?: boolean;
+  onScrollChange?: (value: boolean) => void;
+  onSubmit?: (prompt: string) => void;
+  onChunk?: (message: string) => void;
+  onChunkEnd?: () => void;
 }
 
-export function PromptInput({ client, setAutoScroll }: PromptInputProps) {
+export function PromptInput({
+  client,
+  context = '',
+  autoClear = false,
+  onScrollChange,
+  onSubmit,
+  onChunk,
+  onChunkEnd,
+}: PromptInputProps) {
   const { config } = useConfig();
-  const { setMessage } = useChatMessageStore();
 
   const [prompt, setPrompt] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -21,7 +33,7 @@ export function PromptInput({ client, setAutoScroll }: PromptInputProps) {
       id="prompt"
       autoFocus
       rows={1}
-      className="bg-black text-white border-0 p-0 outline-none w-full resize-none"
+      className="bg-black text-white border-0 p-0 outline-none w-full max-h-32"
       placeholder="Type something..."
       value={prompt}
       onChange={e => setPrompt(e.target.value)}
@@ -35,31 +47,51 @@ export function PromptInput({ client, setAutoScroll }: PromptInputProps) {
 
         if (loading) return;
 
-        setMessage('');
+        if (autoClear) {
+          setPrompt('');
+        }
+
+        onSubmit?.(prompt);
         setLoading(true);
 
         const wheel = (e: WheelEvent) => {
-          if (e.deltaY < 0) setAutoScroll(false);
+          if (e.deltaY < 0) onScrollChange?.(false);
           if (e.deltaY > 0) {
             const scroll = document.getElementById('scroll');
             if (!scroll) return;
             if (scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight <= scroll.clientHeight * 0.2)
-              setAutoScroll(true);
+              onScrollChange?.(true);
           }
         };
+
         window.addEventListener('wheel', wheel);
 
-        const stream = await client.chat.completions.create({
-          model: config.model,
-          messages: [{ role: 'user', content: prompt }],
-          stream: true,
-        });
+        try {
+          const messages: ChatCompletionMessageParam[] = [];
 
-        for await (const chunk of stream) {
-          setMessage(prev => prev + chunk.choices[0].delta.content);
+          if (context) {
+            messages.push({ role: 'system', content: context });
+          }
+
+          messages.push({ role: 'user', content: prompt });
+
+          const stream = await client.chat.completions.create({
+            model: config.model,
+            messages: messages,
+            stream: true,
+          });
+
+          for await (const chunk of stream) {
+            onChunk?.(chunk.choices[0].delta.content ?? '');
+          }
+        } catch (error) {
+          console.error('Error while streaming:', error);
+          onChunk?.('Error while streaming');
+        } finally {
+          onChunkEnd?.();
         }
 
-        if (config.autoScroll) setAutoScroll(true);
+        if (config.autoScroll) onScrollChange?.(true);
 
         window.removeEventListener('wheel', wheel);
 

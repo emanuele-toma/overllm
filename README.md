@@ -116,7 +116,7 @@ If you want to use an LLM without paying, you can use Gemini. Go to [Google AI S
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Add chat history
+- [x] Add chat history
 - [ ] Make it easy to switch between LLMs
 - [ ] Add speech-to-text
 - [ ] Add text-to-speech

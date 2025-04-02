@@ -17,7 +17,10 @@ export const AutoResizeTextarea: FC<AutoResizeTextareaProps> = (props) => {
     const textarea = textareaRef.current;
     if (textarea) {
       resize();
-      textarea.style.overflowY = 'hidden';
+      textarea.style.overflowY = 'auto';
+      textarea.style.resize = 'none';
+      textarea.style.scrollbarColor = 'var(--color-neutral-700) transparent';
+      textarea.style.scrollbarWidth = 'thin';
       textarea.addEventListener('input', resize);
       return () => textarea.removeEventListener('input', resize);
     }
