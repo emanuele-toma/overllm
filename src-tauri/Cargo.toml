@@ -1,6 +1,6 @@
 [package]
 name = "overllm"
-version = "0.4.0"
+version = "0.4.1"
 description = "A cross-platform overlay that provides a Spotlight-like interface for interacting with an LLM"
 authors = ["emanuele-toma"]
 edition = "2021"
